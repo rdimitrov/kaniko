@@ -21,7 +21,9 @@ VERSION ?= v$(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_BUILD)
 VERSION_PACKAGE = $(REPOPATH/pkg/version)
 
 GOOS ?= $(shell go env GOOS)
-GOARCH = amd64
+# GOARCH = amd64
+GOARCH = arm
+GOARM = 7
 ORG := github.com/GoogleContainerTools
 PROJECT := kaniko
 REGISTRY?=gcr.io/kaniko-project
@@ -38,7 +40,7 @@ EXECUTOR_PACKAGE = $(REPOPATH)/cmd/executor
 KANIKO_PROJECT = $(REPOPATH)/kaniko
 
 out/executor: $(GO_FILES)
-	GOARCH=$(GOARCH) GOOS=linux CGO_ENABLED=0 go build -ldflags $(GO_LDFLAGS) -o $@ $(EXECUTOR_PACKAGE)
+	GOARM=$(GOARM) GOARCH=$(GOARCH) GOOS=linux CGO_ENABLED=0 go build -ldflags $(GO_LDFLAGS) -o $@ $(EXECUTOR_PACKAGE)
 
 .PHONY: test
 test: out/executor
@@ -52,3 +54,8 @@ integration-test:
 images:
 	docker build -t $(REGISTRY)/executor:latest -f deploy/Dockerfile .
 	docker build -t $(REGISTRY)/executor:debug -f deploy/Dockerfile_debug .
+
+.PHONY: images-armhf
+images-armhf:
+	docker build -t $(REGISTRY)/executor:latest -f deploy/Dockerfile.armhf .
+#	docker build -t $(REGISTRY)/executor:debug -f deploy/Dockerfile_debug.armhf .
